@@ -1,0 +1,14 @@
+# directories
+**/bin/
+**/obj/
+**/out/
+
+# files
+Dockerfile*
+**/*.md
+.dockerignore
+.git
+*.db
+
+Myamtech.Terraria.DiscordBot/appsettings.*.json
+Myamtech.Terraria.DiscordBot/terraria.json
