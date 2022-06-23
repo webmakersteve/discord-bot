@@ -86,6 +86,7 @@ public class TShockScraper : BackgroundService
 
     private async Task CreateEmbed(TerrariaServerCache.Entry entry)
     {
+        const ulong channelId = 526632816151101440ul;
         try
         {
             var guild = _discordClient.GetGuild(GuildId);
@@ -95,7 +96,14 @@ public class TShockScraper : BackgroundService
                 return;
             }
 
-            var channel = guild.GetTextChannel(526632816151101440ul);
+            var channel = guild.GetTextChannel(channelId);
+
+            if (channel == null)
+            {
+                Logger.Debug("Could not find text channel by ID: {ChannelId}", channelId);
+                return;
+            }
+            
             var result = await _embedRepository.GetExistingMessageIdAsync(GuildId, entry.WorldName);
 
             var entryHashCode = entry.GetHashCode();
