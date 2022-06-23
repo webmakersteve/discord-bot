@@ -13,7 +13,8 @@ RUN dotnet restore -r linux-musl-x64 /p:PublishReadyToRun=true
 COPY Myamtech.Terraria.DiscordBot/. ./Myamtech.Terraria.DiscordBot/
 WORKDIR /source/Myamtech.Terraria.DiscordBot
 # /p:PublishReadyToRun=true is not working
-RUN dotnet publish -c release -o /app -r linux-musl-x64 --self-contained true --no-restore /p:PublishTrimmed=true /p:PublishSingleFile=true
+# /p:PublishTrimmed=true leave it off for now since we use JSON types
+RUN dotnet publish -c release -o /app -r linux-musl-x64 --self-contained true --no-restore /p:PublishSingleFile=true
 
 # final stage/image
 FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-alpine-amd64
