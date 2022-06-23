@@ -18,12 +18,14 @@ RUN dotnet publish -c release -o /app -r linux-musl-x64 --self-contained true --
 
 # final stage/image
 FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-alpine-amd64
-WORKDIR /app
 
 ENV \
      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false \
      LC_ALL=en_US.UTF-8 \
      LANG=en_US.UTF-8
+RUN apk add --no-cache icu-libs
+
+WORKDIR /app
 
 COPY --from=build /app ./
 
