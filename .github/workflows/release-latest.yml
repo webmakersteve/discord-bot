@@ -20,4 +20,4 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: webmakersteve/discord-bot:${{ env.GITHUB_SHA }}
+          tags: webmakersteve/discord-bot:${{ github.sha }}
