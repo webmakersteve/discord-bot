@@ -4,6 +4,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Myamtech.Terraria.DiscordBot.Configuration;
 using Myamtech.Terraria.DiscordBot.Database;
@@ -34,12 +35,25 @@ builder.Services.AddLogging(loggingBuilder =>
     loggingBuilder.AddSerilog(dispose: true);
 });
 
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.Configure<DiscordConfiguration>(
     builder.Configuration.GetSection(nameof(Discord)), (b) =>
     {
         b.ErrorOnUnknownConfiguration = true;
     }
 ).PostConfigure<DiscordConfiguration>(x =>
+{
+    var context = new ValidationContext(x);
+    Validator.ValidateObject(x, context);
+});
+
+builder.Services.Configure<TerrariaTargetsConfiguration>(
+    builder.Configuration.GetSection(nameof(TerrariaTargetsConfiguration.TerrariaTarget) + "s"), (b) =>
+    {
+        b.ErrorOnUnknownConfiguration = true;
+    }
+).PostConfigure<TerrariaTargetsConfiguration>(x =>
 {
     var context = new ValidationContext(x);
     Validator.ValidateObject(x, context);

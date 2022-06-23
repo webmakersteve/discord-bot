@@ -1,8 +1,11 @@
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.Options;
+using Myamtech.Terraria.DiscordBot.Configuration;
 using Myamtech.Terraria.DiscordBot.Database;
 using Myamtech.Terraria.DiscordBot.Terraria;
 using Serilog;
+using Serilog.Context;
 using ILogger = Serilog.ILogger;
 
 namespace Myamtech.Terraria.DiscordBot.Services;
@@ -32,25 +35,52 @@ public class TShockScraper : BackgroundService
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = _scopeFactory.CreateScope();
-            var tShockClient = scope.ServiceProvider.GetRequiredService<TShockHttpClient>();
-            tShockClient.BaseAddress = new Uri("http://localhost:7878");
+            var terrariaConfigs = scope.ServiceProvider
+                .GetRequiredService<IOptionsSnapshot<TerrariaTargetsConfiguration>>();
+            var thisRunScrapeTargets = terrariaConfigs.Value.Targets;
+
+            if (thisRunScrapeTargets.Count == 0)
+            {
+                Logger.Information("No current configured scrape targets...");
+            }
+            
+            foreach (var target in thisRunScrapeTargets)
+            {
+                await RunScrapeForTargetAsync(scope, target, stoppingToken);
+            }
+            
+            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        }
+    }
+
+    private async Task RunScrapeForTargetAsync(
+        IServiceScope serviceScope,
+        TerrariaTargetsConfiguration.TerrariaTarget target, 
+        CancellationToken stoppingToken
+    )
+    {
+        try
+        {
+            using var _ = LogContext.PushProperty("TerrariaTarget", target.Name);
+            var tShockClient = serviceScope.ServiceProvider.GetRequiredService<TShockHttpClient>();
+            tShockClient.BaseAddress = new Uri(target.ApiUrl);
             var res = await tShockClient.GetAuthenticatedServerStatus(
-                "SCRAPER_TOKEN", 
+                target.Token,
                 stoppingToken
             );
 
-            
             Logger.Information("Updating server status for world {WorldName}", res.WorldName);
-            
+
             TerrariaServerCache.Entry entry = _cache.Update(res.WorldName, res);
 
             await CreateEmbed(entry);
-
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+        }
+        catch (Exception e)
+        {
+            Logger.Warning(e, $"Failed to execute scrape for {target.Name} at {target.ApiUrl}");
         }
     }
 

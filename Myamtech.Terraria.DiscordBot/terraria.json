@@ -1,3 +1,9 @@
 {
-  
+  "TerrariaTargets": {
+    "Targets": [{
+      "Name": "foo",
+      "ApiUrl": "http://localhost:7878",
+      "Token": "SCRAPER_TOKEN"
+    }]
+  }
 }

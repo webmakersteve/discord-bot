@@ -11,7 +11,7 @@ public class TerrariaEmbedMessage
     [Column(Order = 1)]
     public string WorldName { get; set; } = null!;
     
-    [Column(Order = 3)]
+    [Column(Order = 2)]
     public ulong MessageId { get; set; }
     
     [Column(Order = 3)]
